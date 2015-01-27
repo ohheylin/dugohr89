@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.2.xsd">
+
+<!--Controller 관련 스캔은 WEB-INF 하위에 있는 xml에서 설정해야만 함
+	Resources영역에서 설정할 경우 경로를 찾지 못함(호출은 웹영역으로 인식)  -->
+	<context:component-scan base-package="ko.co.ksyVer1.*.web"/>
+
+<!--페이징이 사용되는 Controller(BoardController)의 변수 초기값을 세팅한다. -->
+	<bean id="boardController" class="ko.co.ksyVer1.board.web.BoardController">
+		<property name="pageSize"><value>10</value></property>
+		<property name="pageBlockSize"><value>5</value></property>
+	</bean>
+
+<!--Spring 3.0부터 제공하는 mvc 태그 설정이다. 
+	Annotation기반의 Controller호출 설정과 필요한 bean설정을 편리하게 하도록 만들어졌다. 
+	그러나 내부 수정이 어렵기 때문에 mvc:annotation-driven에서 제공하는 기능에 대하여 잘 숙지하고 변경이 불가능 한 경우에는 mvc:annotation-driven을 쓰지 않고 필요한 bean을 수동으로 넣어줘야하는 경우도 있다. 
+	mvc:annotation-driven에서 쓰는 bean설정을 중복으로 쓰지 않도록 주의한다. -->
+	<mvc:annotation-driven />
+	
+<!--Jsp파일에서 사용되는 css, js, image 등에대한 경로설정 -->
+	<mvc:resources location="/images/" mapping="/images/**" />
+	<mvc:resources location="/com/" mapping="/com/**" />
+
+<!--논리적인 View 이름을 사용하여 템플릿 파일 장원을 사용하여 랜더링 되는 View 객체를 결정한다.
+ 	실제 랜더링을 수행할 JSP에 단순히 요청을 전달하는 일을 한다.
+	만약 JSTL 태그를 사용한다면 viewClass 특성을 설정함으로써 InternalResourceView를 JstlView로 대체해야 한다. JstlView도 요청을 JSP에 전달한다.
+	JSTL을 사용할 경우 property를 추가해 주어야 함 <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/> -->
+ 	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/view/"/>
+		<property name="suffix" value=".jsp"/>
+	</bean>
+
+<!--Multipart Resolver
+	파일업로드 구현을 위한 설정 -->
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize"><value>100000000</value></property>
+	</bean>
+	
+<!--AOP 처리
+	@Aspect 가 선언되어있는 class를 찾아 Aspect로 등록시켜주는 후처리기를 설정한다
+	proxy-target-class="true" 를 true로 함으로써 
+	Target class의 Interface가 필요없어도 되고, CBLIB를 사용하여 Proxy를 만든다
+ 	정적으로 작용하며 동적이 아니라 부하가 준다 -->
+ 	<aop:aspectj-autoproxy proxy-target-class="true"/>
+	<bean class="ko.co.ksyVer1.aop.AuthorizeAspect"/>
+	
+<!--예외 처리
+	web.xml 의 <error-page> 와 비슷하게 예외를 처리할 뷰를 지정할 수 있게 해준다 -->
+	<bean id="exceptionResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+		<property name="exceptionMappings">
+			<props>
+				<prop key="ko.co.ksyVer1.aop.InvalidLoginException">
+					redirect:/login.html
+				</prop>
+				<prop key="java.lang.Exception">
+					error
+				</prop>
+			</props>
+		</property>
+	</bean>
+
+</beans>

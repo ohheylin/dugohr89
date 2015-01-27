@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+	<properties resource="mybatis/db.properties" />
+	<!-- Null타입 허용; null값이 들어오면 NULL을 주겠다 -->
+	<settings>
+		<setting name="jdbcTypeForNull" value="NULL" />
+	</settings>
+	<typeAliases><!--Board를 쓰면 pbean.Board라고 알겠다. -->
+		<typeAlias alias="Board" type="pbean.Board" />
+	</typeAliases>
+
+	<environments default="development">
+		<environment id="development">
+			<transactionManager type="JDBC" />
+			<dataSource type="POOLED"><!-- DataSource 에 풀링이 적용된 JDBC 커넥션을 위한 구현체 
+					새로운 Connection 인스턴스를 생성하기 위해 매번 초기화하는 것을 피하게 해줌. 빠른 응답을 요구하는 웹 애플리케이션에서는 
+					흔하게 사용됨. -->
+
+				<property name="driver" value="${driver}" />
+				<property name="url" value="${url}" />
+				<property name="username" value="${username}" />
+				<property name="password" value="${password}" />
+			</dataSource>
+		</environment>
+	</environments>
+
+	<mappers>
+		<mapper resource="mybatis/BoardMapper.xml" />
+		<!-- <mapper resource="MemberMapper.xml" /> 여러개등록가능 -->
+	</mappers>
+
+</configuration>

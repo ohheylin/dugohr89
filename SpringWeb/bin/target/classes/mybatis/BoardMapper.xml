@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+   PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN"
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="dao.BoardDAO">
+
+	<select id="getBoardList" resultType="Board" parameterType="java.util.Map">
+		SELECT * FROM (
+			SELECT ROWNUM rnum, t1.*
+			  FROM (
+					SELECT * FROM board
+					 ORDER BY num DESC
+				   ) t1
+			 WHERE ROWNUM &lt;= #{end}
+		)
+		 WHERE rnum &gt;= #{start}
+	</select>
+
+	<insert id="insertBoard" parameterType="Board">
+		INSERT INTO board(
+		num, userid, title, regdate, content, count, filename, ref
+		) VALUES(
+		board_seq.nextval, #{userid}, #{title}, sysdate, #{content}, #{count},
+		#{filename},board_seq.currval
+		)
+	</insert>
+
+	<update id="updateBoard" parameterType="Board">
+		UPDATE board SET
+		title = #{title}, filename = #{filename}, content = #{content}
+		WHERE num = #{num}
+	</update>
+
+	<delete id="deleteBoard" parameterType="Integer">
+	<!-- 파라미터값이 하나기때문에 integer로받음. 메모리절약. -->
+		DELETE FROM board
+		WHERE num = #{num}
+	</delete>
+
+	<select id="getBoardCount" resultType="Integer"><!-- 전체 글 수 -->
+		SELECT COUNT(*) FROM board
+	</select>
+
+	<update id="updateCount" parameterType="Integer">
+		UPDATE board SET count = count + 1
+		WHERE num = #{num}
+	</update>
+	
+	<select id="getBoard" resultType="Board" parameterType="Integer">
+		SELECT * FROM board
+		WHERE num = #{num}
+	</select>
+	
+</mapper>   

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+
+<!--Mapper 설정
+	이 외의 설정 추가시 참조 : http://mybatis.github.io/mybatis-3/ko/configuration.html -->
+	<settings>
+	<!--jdbcTypeForNull :
+		JDBC타입을 파라미터에 제공하지 않을때 null값을 처리한 JDBC타입을 명시한다. 
+		일부 드라이버는 칼럼의 JDBC타입을 정의하도록 요구하지만 대부분은 NULL, VARCHAR 나 OTHER 처럼 일반적인 값을 사용해서 동작한다. -->
+		<setting name="jdbcTypeForNull" value="NULL" />
+	</settings>
+	
+<!--Mapping 에서 사용되는 Alias 설정
+	타입 별칭은 자바 타입에 대한 좀더 짧은 이름이다. 오직 XML 설정에서만 사용되며, 타이핑을 줄이기 위해 존재한다 -->
+	<typeAliases>
+		<typeAlias alias="BoardBean"     type="ko.co.ksyVer1.board.service.bean.BoardBean"     />
+		<typeAlias alias="BoardFileBean" type="ko.co.ksyVer1.board.service.bean.BoardFileBean"     />
+		<typeAlias alias="UserInfo"      type="ko.co.ksyVer1.user.service.bean.UserInfo"  />
+	</typeAliases>
+
+</configuration>

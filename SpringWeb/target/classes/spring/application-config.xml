@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	
+<!--태그를 사용해서 스프링이 클래스를 검색할 패키지를 지정
+	태그는 해당 패키지에서 @Component 어노테이션이(또는 하위 어노테이션) 적용된 클래스를 검색하여 빈으로 자동등록
+	따라서 XML 설정 파일에 다향한 빈 정보를 추가하지 않아도 됨 -->
+ 	<context:component-scan base-package="ko.co.ksyVer1">
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+	</context:component-scan>
+	
+<!--Property 값 읽어오기
+	DB접속정보 properties -->
+	<bean id="propertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:spring/db.properties</value>
+			</list>
+		</property>
+	</bean>
+
+<!--JDCB를 이용한데이터 접근
+	DataSource 설정 -->
+	<util:properties id="cfg" location="classpath:spring/db.properties" />
+	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="#{cfg['driver']}"/>
+		<property name="url" value="#{cfg['url']}"/>
+		<property name="username" value="#{cfg['username']}"/>
+		<property name="password" value="#{cfg['password']}"/>
+	</bean>
+	
+<!--DAO를 구현하지 않고 Interface의 메소드만 선언하면 myBatis에서 자동 구현되어 사용할 수 있게 하는 방법 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="ko.co.ksyVer1.*.service.impl" />
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+	</bean>
+
+<!--마이바티스를 사용하면 SqlSessionFactory는 SqlSessionFactoryBuilder를 사용해서 생성한다.
+	마이바티스 스프링 연동모듈에서는, SqlSessionFactoryBean이 대신 사용된다 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"/>
+		<property name="configLocation">
+			<value>classpath:spring/application-configuration.xml</value>
+		</property>
+		<property name="mapperLocations">
+			<util:list id="mapperLocations">
+				<value>classpath*:mybatis/**/*Mapper.xml</value>
+			</util:list>
+		</property>
+	</bean>
+   
+<!--Transaction 설정
+	마이바티스 스프링 연동모듈을 사용하는 중요한 이유중 하나는 마이바티스가 스프링 트랜잭션에 자연스럽게 연동될수 있다는 것이다. 
+	마이바티스에 종속되는 새로운 트랜잭션 관리를 만드는 것보다는 마이바티스 스프링 연동모듈이 스프링의 DataSourceTransactionManager과 융합되는 것이 좋다.
+	스프링 트랜잭션 관리자를 한번 설정하면, 대개의 경우처럼 스프링에서 트랜잭션을 설정할 수 있다. 
+	@Transactional 애노테이션과 AOP스타일의 설정 모두 지원한다. 
+	하나의 SqlSession객체가 생성되고 트랜잭션이 동작하는 동안 지속적으로 사용될것이다. 
+	세션은 트랜잭션이 완료되면 적절히 커밋이 되거나 롤백될것이다. 
+	마이바티스 스프링 연동모듈은 한번 셋업되면 트랜잭션을 투명하게 관리한다. 
+	DAO클래스에 어떠한 추가적인 코드를 넣을 필요가 없다. -->
+	<bean id="transactionManager" 
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+
+</beans>
